@@ -77,9 +77,11 @@ export default function Pricing() {
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
                   return actions.order.create({
+                    intent: "CAPTURE",
                     purchase_units: [
                       {
                         amount: {
+                          currency_code: "USD",
                           value: "19.00",
                         },
                         description: "RemindMe Basic Plan",
@@ -126,9 +128,11 @@ export default function Pricing() {
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
                   return actions.order.create({
+                    intent: "CAPTURE",
                     purchase_units: [
                       {
                         amount: {
+                          currency_code: "USD",
                           value: "29.00",
                         },
                         description: "RemindMe Premium Plan",
