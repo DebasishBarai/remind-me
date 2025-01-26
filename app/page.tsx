@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Bell, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
 
 export default function Home() {
 const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -40,9 +41,7 @@ const [theme, setTheme] = useState<'light' | 'dark'>('light');
             <Link href="/pricing">
               <Button variant="outline">Pricing</Button>
             </Link>
-            <Link href="/login">
-              <Button>Login</Button>
-            </Link>
+              <Button onClick={() => signIn()}>Login</Button>
           </div>
         </nav>
       </header>

@@ -45,7 +45,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center px-4">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
+          <h1 className="text-2xl font-bold mb-2">RemindMe</h1>
           <p className="text-muted-foreground">Sign in to your RemindMe account</p>
         </div>
 
