@@ -57,6 +57,7 @@ export function PaymentComponent() {
                 }}
                 createOrder={async () => {
                   try {
+                    console.log('🔵 Starting createOrder flow...');
                     const response = await fetch("/api/payment", {
                       method: "POST",
                       headers: {
@@ -66,6 +67,7 @@ export function PaymentComponent() {
                     });
 
                     const orderData = await response.json();
+                    console.log('✅ Order created:', orderData);
 
                     if (orderData.id) {
                       return orderData.id;
@@ -78,7 +80,7 @@ export function PaymentComponent() {
                       throw new Error(errorMessage);
                     }
                   } catch (error) {
-                    console.error(error);
+                    console.error('🔴 Create order error:', error);
                     setMessage(`Could not initiate PayPal Checkout...${error}`);
                     toast.error('Failed to initialize payment');
                     throw error;
@@ -86,6 +88,7 @@ export function PaymentComponent() {
                 }}
                 onApprove={async (data, actions) => {
                   try {
+                    console.log('🔵 Payment approved, starting capture...', data);
                     const response = await fetch("/api/payment", {
                       method: "PUT",
                       headers: {
@@ -97,7 +100,9 @@ export function PaymentComponent() {
                       }),
                     });
 
+                    console.log('🔵 Capture response received');
                     const orderData = await response.json();
+                    console.log('✅ Capture response data:', orderData);
 
                     if (!response.ok) {
                       throw new Error(orderData.error || 'Payment failed');
@@ -106,13 +111,17 @@ export function PaymentComponent() {
                     toast.success('Payment successful! Your plan has been upgraded.');
                     router.push('/dashboard');
                   } catch (error) {
-                    console.error(error);
+                    console.error('🔴 Payment capture error:', error);
                     toast.error('Payment failed. Please try again.');
                   }
                 }}
                 onError={(err) => {
-                  console.error('PayPal error:', err);
+                  console.error('🔴 PayPal error:', err);
                   toast.error('Payment failed. Please try again.');
+                }}
+                onCancel={() => {
+                  console.log('🔵 Payment cancelled by user');
+                  toast.info('Payment cancelled');
                 }}
               />
             </PayPalScriptProvider>
