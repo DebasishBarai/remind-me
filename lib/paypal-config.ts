@@ -5,7 +5,6 @@ export const paypalOptions = {
   components: ["buttons"],
   "enable-funding": ["paylater", "venmo"],
   "disable-funding": ["card", "credit"],
-  "data-client-token": "abc123xyz==",
 };
 
 export const PLAN_PRICES = {
