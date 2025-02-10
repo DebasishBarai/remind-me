@@ -1,154 +1,62 @@
 "use client";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "./ui/button";
-import { initialOptions } from "./pricing-component";
-
+import { paypalOptions, PLAN_PRICES } from "@/lib/paypal-config";
 
 export const PricingComponent = () => {
-  const { data: session, status } = useSession();
-  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | null>(null);
 
-  const handleBasicPlanPayment = async (data: any) => {
-    try {
-      console.log("Payment successful:", data);
-      // Add your payment success logic here
-    } catch (error) {
-      console.error("Payment error:", error);
+  const handleUpgrade = (plan: 'basic' | 'premium') => {
+    if (!session) {
+      router.push('/login');
+      return;
     }
-  };
-
-  const handlePremiumPlanPayment = async (data: any) => {
-    try {
-      console.log("Payment successful:", data);
-      // Add your payment success logic here
-    } catch (error) {
-      console.error("Payment error:", error);
-    }
+    router.push(`/payment?plan=${plan}`);
   };
 
   return (
-    <PayPalScriptProvider options={initialOptions}>
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-            <p className="text-xl text-muted-foreground">
-              Choose the plan that works best for you
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Basic Plan */}
-            <Card className="p-8 hover:shadow-xl transition-shadow">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">Basic Plan</h2>
-                <div className="text-4xl font-bold mb-2">$19</div>
-                <p className="text-muted-foreground">One-time payment</p>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-primary mr-2" />
-                  <span>Up to 10 reminders per month</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-primary mr-2" />
-                  <span>WhatsApp notifications</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-primary mr-2" />
-                  <span>Recurring reminders</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-primary mr-2" />
-                  <span>Basic customization</span>
-                </li>
-              </ul>
-              {status === "authenticated" ? (
-                <PayPalButtons
-                  style={{ layout: "vertical" }}
-                  createOrder={(data, actions) => {
-                    return actions.order.create({
-                      intent: "CAPTURE",
-                      purchase_units: [
-                        {
-                          amount: {
-                            currency_code: "USD",
-                            value: "19.00",
-                          },
-                          description: "RemindMe Basic Plan",
-                        },
-                      ],
-                    });
-                  }}
-                  onApprove={(data, actions) => {
-                    return actions.order!.capture().then(handleBasicPlanPayment);
-                  }} />
-              ) : (
-                <Button className="w-full" onClick={() => signIn()}>Get Started</Button>
-              )}
-            </Card>
-
-            {/* Premium Plan */}
-            <Card className="p-8 bg-primary text-primary-foreground hover:shadow-xl transition-shadow">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">Premium Plan</h2>
-                <div className="text-4xl font-bold mb-2">$29</div>
-                <p className="text-primary-foreground/80">One-time payment</p>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 mr-2" />
-                  <span>Unlimited reminders</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 mr-2" />
-                  <span>Priority WhatsApp delivery</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 mr-2" />
-                  <span>Advanced recurring options</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 mr-2" />
-                  <span>Premium customization</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 mr-2" />
-                  <span>Priority support</span>
-                </li>
-              </ul>
-              {status === "authenticated" ? (
-                <PayPalButtons
-                  style={{ layout: "vertical" }}
-                  createOrder={(data, actions) => {
-                    return actions.order.create({
-                      intent: "CAPTURE",
-                      purchase_units: [
-                        {
-                          amount: {
-                            currency_code: "USD",
-                            value: "29.00",
-                          },
-                          description: "RemindMe Premium Plan",
-                        },
-                      ],
-                    });
-                  }}
-                  onApprove={(data, actions) => {
-                    return actions.order!.capture().then(handlePremiumPlanPayment);
-                  }} />
-              ) : (
-                <Button className="w-full text-primary dark:text-white" variant='outline' onClick={() => signIn()}>Get Started</Button>
-              )}
-            </Card>
-          </div>
-        </div>
+    <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto px-4">
+      {/* Basic Plan */}
+      <div className="border rounded-lg p-8">
+        <h3 className="text-2xl font-bold">Basic Plan</h3>
+        <p className="text-3xl font-bold mt-4">${PLAN_PRICES.basic}</p>
+        <p className="text-muted-foreground">One-time payment</p>
+        <ul className="mt-6 space-y-4">
+          <li>✓ Up to 10 reminders per month</li>
+          <li>✓ WhatsApp notifications</li>
+          <li>✓ Basic customization</li>
+        </ul>
+        <Button 
+          className="w-full mt-8"
+          onClick={() => handleUpgrade('basic')}
+        >
+          Get Started
+        </Button>
       </div>
-    </PayPalScriptProvider>
+
+      {/* Premium Plan */}
+      <div className="border-2 border-primary rounded-lg p-8">
+        <h3 className="text-2xl font-bold">Premium Plan</h3>
+        <p className="text-3xl font-bold mt-4">${PLAN_PRICES.premium}</p>
+        <p className="text-muted-foreground">One-time payment</p>
+        <ul className="mt-6 space-y-4">
+          <li>✓ Unlimited reminders</li>
+          <li>✓ Priority WhatsApp delivery</li>
+          <li>✓ Premium customization</li>
+        </ul>
+        <Button 
+          className="w-full mt-8"
+          onClick={() => handleUpgrade('premium')}
+        >
+          Upgrade to Premium
+        </Button>
+      </div>
+    </div>
   );
 };
 

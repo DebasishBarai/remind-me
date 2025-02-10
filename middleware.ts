@@ -3,6 +3,17 @@ import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { addDays, isAfter } from 'date-fns';
 import { SubscriptionType } from "@prisma/client";
+import { NextRequest } from 'next/server';
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    user?: {
+      id: string;
+      subscriptionType: SubscriptionType;
+      createdAt: string | Date;
+    }
+  }
+}
 
 // middleware is applied to all routes, use conditionals to select
 
@@ -26,8 +37,11 @@ export default withAuth(function middleware(req, token) {}, {
   },
 });
 
-export async function middleware(request: Request) {
-  const token = await getToken({ req: request });
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ 
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
   
   if (!token) {
     return NextResponse.next();

@@ -1,21 +1,32 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const PAYPAL_API = process.env.NODE_ENV === 'production'
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
 
-const PLAN_PRICES = {
+// Use appropriate credentials based on environment
+const PAYPAL_CLIENT_ID = process.env.NODE_ENV === 'production'
+  ? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  : process.env.NEXT_PUBLIC_SANDBOX_PAYPAL_CLIENT_ID;
+
+const PAYPAL_SECRET_KEY = process.env.NODE_ENV === 'production'
+  ? process.env.PAYPAL_SECRET_KEY
+  : process.env.PAYPAL_SANDBOX_SECRET_KEY;
+
+type PlanType = 'basic' | 'premium';
+
+const PLAN_PRICES: Record<PlanType, number> = {
   basic: 19,
   premium: 29,
-};
+} as const;
 
 async function getPayPalAccessToken() {
   try {
     const auth = Buffer.from(
-      `${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET_KEY}`
+      `${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET_KEY}`
     ).toString('base64');
 
     const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
@@ -58,6 +69,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const selectedPlan = plan as PlanType;
+
     // Get PayPal access token
     const accessToken = await getPayPalAccessToken();
 
@@ -74,9 +87,9 @@ export async function POST(request: Request) {
           {
             amount: {
               currency_code: 'USD',
-              value: PLAN_PRICES[plan].toString(),
+              value: PLAN_PRICES[selectedPlan].toString(),
             },
-            description: `RemindMe ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
+            description: `RemindMe ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`,
           },
         ],
         application_context: {
