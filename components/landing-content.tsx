@@ -1,51 +1,13 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Bell, Sun, Moon } from "lucide-react";
+import { Calendar, Clock, Bell } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 
 export const LandingContent = () => {
-const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', newTheme);
-  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
-      <header className="container mx-auto px-4 py-6">
-        <nav className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold">
-            RemindMe
-          </Link>
-          <div className="flex gap-4">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={toggleTheme}
-            >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-            </Button>
-            <Link href="/pricing">
-              <Button variant="outline">Pricing</Button>
-            </Link>
-              <Button onClick={() => signIn()}>Login</Button>
-          </div>
-        </nav>
-      </header>
-
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
@@ -55,12 +17,10 @@ const [theme, setTheme] = useState<'light' | 'dark'>('light');
             Schedule custom WhatsApp reminders for all your important dates and events
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/dashboard">
-              <Button size="lg" className="gap-2">
-                <Bell className="w-4 h-4" />
-                Get Started
-              </Button>
-            </Link>
+            <Button size="lg" className="gap-2" onClick={() => signIn()}>
+              <Bell className="w-4 h-4" />
+              Get Started
+            </Button>
             <Link href="/pricing">
               <Button size="lg" variant="outline" className="gap-2">
                 View Pricing

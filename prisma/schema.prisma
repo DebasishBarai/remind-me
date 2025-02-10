@@ -7,35 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SubscriptionType {
+  free
+  basic
+  premium
+}
+
 model User {
-  id            String     @id @default(cuid())
-  name          String?
-  email         String     @unique
-  password      String?
-  whatsappNumber String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  reminders     Reminder[]
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  isVerified     Boolean   @default(false)
+  verifyToken    String?   @unique
+  subscriptionType SubscriptionType @default(free)
+  subscriptionEndDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  reminders      Reminder[]
 }
 
 model Account {
-  id                 String    @id @default(cuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?   @db.Text
-  access_token      String?   @db.Text
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?   @db.Text
+  id_token          String? @db.Text
   session_state     String?
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -48,16 +58,24 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Reminder {
-  id          String   @id @default(cuid())
-  title       String
-  message     String
-  scheduleDate DateTime
-  isRecurring Boolean  @default(false)
-  frequency   String?  // daily, weekly, monthly, yearly
-  status      String   @default("pending") // pending, sent, failed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  dateTime  DateTime
+  frequency String   @default("once")
+  phone     String
+  sent      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
