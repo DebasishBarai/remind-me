@@ -26,7 +26,7 @@ const publicRoutes = [
   "/contact",
 ];
 
-export default withAuth(function middleware(req, token) {}, {
+export default withAuth(function middleware(req, token) { }, {
   callbacks: {
     authorized: ({ req, token }) => {
       if (!publicRoutes.includes(req.nextUrl.pathname) && token === null) {
@@ -38,11 +38,11 @@ export default withAuth(function middleware(req, token) {}, {
 });
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ 
+  const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  
+
   if (!token) {
     return NextResponse.next();
   }
@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
   if (token.user?.subscriptionType === SubscriptionType.free) {
     const createdAt = new Date(token.user.createdAt);
     const trialEndDate = addDays(createdAt, 7);
-    
+
     if (isAfter(new Date(), trialEndDate)) {
       // Redirect to pricing page if trying to access protected routes
       const protectedRoutes = ['/create', '/reminders'];
@@ -65,5 +65,16 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/create', '/reminders', '/dashboard'],
+  matcher: [
+    /*
+     * Match all routes except:
+     * 1. /api routes
+     * 2. /_next routes
+     * 3. /_static routes
+     * 4. /_vercel routes
+     * 5. All static files (files with an extension)
+     * 6. Public routes
+     */
+    '/((?!api|_next|_static|_vercel|[\\w-]+\\.\\w+).*)',
+  ]
 };

@@ -34,7 +34,7 @@ export const PricingCards = () => {
               <span>Basic customization</span>
             </li>
           </ul>
-          <Link href="/pricing">
+          <Link href="/payment?plan=basic">
             <Button className="w-full">Choose Basic</Button>
           </Link>
         </div>
@@ -72,7 +72,7 @@ export const PricingCards = () => {
               <span>Priority support</span>
             </li>
           </ul>
-          <Link href="/pricing">
+          <Link href="/payment?plan=premium">
             <Button className="w-full" variant="default">
               Choose Premium
             </Button>

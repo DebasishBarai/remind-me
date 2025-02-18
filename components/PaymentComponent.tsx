@@ -49,7 +49,7 @@ export function PaymentComponent() {
 
           <div className="w-full p-4 border rounded-lg">
             <PayPalScriptProvider options={paypalOptions}>
-              <PayPalButtons 
+              <PayPalButtons
                 style={{
                   layout: "vertical",
                   shape: "rect",

@@ -44,12 +44,12 @@ async function getPayPalAccessToken() {
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       console.error('PayPal token error response:', data);
       throw new Error(data.error_description || 'Failed to get access token');
     }
-    
+
     return data.access_token;
   } catch (error) {
     console.error('PayPal token error:', error);
@@ -175,7 +175,7 @@ export async function PUT(request: Request) {
     if (data.status === 'COMPLETED') {
       console.log('✅ Payment completed successfully');
       console.log(`✅ Upgrading user ${session.user.email} to ${plan} plan`);
-      
+
       // Update user subscription
       await prisma.user.update({
         where: { email: session.user.email },
