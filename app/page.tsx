@@ -19,7 +19,7 @@ export default function Home() {
               Never Miss Important Reminders with WhatsApp
             </h1>
             <p className="text-xl text-muted-foreground">
-              Set up automated WhatsApp reminders for important events, tasks, and meetings. 
+              Set up automated WhatsApp reminders for important events, tasks, and meetings.
               Stay organized and never forget what matters most.
             </p>
             <div className="flex justify-center gap-4">
