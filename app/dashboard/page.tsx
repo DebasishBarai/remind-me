@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, Bell, Settings, Plus, Trash2 } from 'lucide-react';
+import { CalendarDays, Bell, Settings, Plus, Trash2, Users, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -25,6 +25,19 @@ import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { SubscriptionType } from "@prisma/client";
 import { UpgradeOptions } from "@/components/UpgradeOptions";
+import { Badge } from '@/components/ui/badge';
+
+interface Contact {
+  id: string;
+  name: string;
+  phone: string;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  contacts: Contact[];
+}
 
 interface Reminder {
   id: string;
@@ -35,6 +48,7 @@ interface Reminder {
   phone: string;
   sent: boolean;
   createdAt: string;
+  Group: Group | null;
 }
 
 interface User {
@@ -97,6 +111,7 @@ export default function DashboardPage() {
     return reminderDate > now && reminderDate <= sevenDaysFromNow;
   });
   const totalSent = reminders.filter(r => r.sent).length;
+  const groupReminders = reminders.filter(r => r.Group !== null);
 
   const deleteReminder = async (id: string) => {
     try {
@@ -150,17 +165,31 @@ export default function DashboardPage() {
       {(!trialStatus.isExpired || userData?.subscriptionType !== 'free') ? (
         <>
           {/* Header Section */}
-          <div className="flex justify-between items-center">
-            <Link href="/create">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Reminder
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div className="flex gap-2">
+              <Link href="/create">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Reminder
+                </Button>
+              </Link>
+              <Link href="/contacts">
+                <Button variant="outline">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Manage Contacts
+                </Button>
+              </Link>
+              <Link href="/groups">
+                <Button variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Groups
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium">Active Reminders</CardTitle>
@@ -180,6 +209,17 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="text-2xl font-bold">{upcomingReminders.length}</div>
                 <p className="text-xs text-muted-foreground">Next 7 days</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium">Group Reminders</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{groupReminders.length}</div>
+                <p className="text-xs text-muted-foreground">Multiple recipients</p>
               </CardContent>
             </Card>
 
@@ -220,11 +260,27 @@ export default function DashboardPage() {
                       className="flex items-center justify-between p-4 rounded-lg border"
                     >
                       <div className="space-y-1">
-                        <h3 className="font-medium">{reminder.title}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{reminder.title}</h3>
+                          {reminder.Group && (
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {reminder.Group.name}
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{reminder.message}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(reminder.dateTime), 'PPp')}
-                        </p>
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          <span>{format(new Date(reminder.dateTime), 'PPp')}</span>
+                          {reminder.Group ? (
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {reminder.Group.contacts.length} recipients
+                            </span>
+                          ) : (
+                            <span>{reminder.phone}</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className={`px-2 py-1 rounded-full text-xs ${
@@ -270,7 +326,12 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </>
-      ) : null}
+      ) : (
+        <UpgradeOptions 
+          currentPlan={userData?.subscriptionType || 'free'} 
+          isTrialExpired={true}
+        />
+      )}
     </div>
   );
 }

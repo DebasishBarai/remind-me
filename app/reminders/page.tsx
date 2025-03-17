@@ -32,9 +32,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Search, Plus } from 'lucide-react';
+import { Trash2, Search, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+
+interface Contact {
+  id: string;
+  name: string;
+  phone: string;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  contacts: Contact[];
+}
 
 interface Reminder {
   id: string;
@@ -45,6 +58,7 @@ interface Reminder {
   phone: string;
   sent: boolean;
   createdAt: string;
+  Group: Group | null;
 }
 
 export default function RemindersPage() {
@@ -59,6 +73,7 @@ export default function RemindersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -107,7 +122,12 @@ export default function RemindersPage() {
       (statusFilter === 'sent' && reminder.sent) ||
       (statusFilter === 'pending' && !reminder.sent);
 
-    return matchesSearch && matchesStatus;
+    const matchesType =
+      typeFilter === 'all' ||
+      (typeFilter === 'individual' && !reminder.Group) ||
+      (typeFilter === 'group' && reminder.Group);
+
+    return matchesSearch && matchesStatus && matchesType;
   });
 
   if (status === "loading" || isLoading) {
@@ -120,17 +140,25 @@ export default function RemindersPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold">All Reminders</h1>
-        <Link href="/create">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Reminder
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/create">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Reminder
+            </Button>
+          </Link>
+          <Link href="/groups">
+            <Button variant="outline">
+              <Users className="mr-2 h-4 w-4" />
+              Manage Groups
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -140,22 +168,37 @@ export default function RemindersPage() {
             className="pl-8"
           />
         </div>
-        <Select
-          value={statusFilter}
-          onValueChange={setStatusFilter}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={typeFilter}
+            onValueChange={setTypeFilter}
+          >
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="individual">Individual</SelectItem>
+              <SelectItem value="group">Group</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -164,7 +207,7 @@ export default function RemindersPage() {
               <TableHead>Date & Time</TableHead>
               <TableHead>Frequency</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Recipients</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -178,7 +221,17 @@ export default function RemindersPage() {
             ) : (
               filteredReminders.map((reminder) => (
                 <TableRow key={reminder.id}>
-                  <TableCell className="font-medium">{reminder.title}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {reminder.title}
+                      {reminder.Group && (
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          Group
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{reminder.message}</TableCell>
                   <TableCell>{format(new Date(reminder.dateTime), 'PPp')}</TableCell>
                   <TableCell className="capitalize">{reminder.frequency}</TableCell>
@@ -191,7 +244,19 @@ export default function RemindersPage() {
                       {reminder.sent ? 'Sent' : 'Pending'}
                     </span>
                   </TableCell>
-                  <TableCell>{reminder.phone}</TableCell>
+                  <TableCell>
+                    {reminder.Group ? (
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>{reminder.Group.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({reminder.Group.contacts.length})
+                        </span>
+                      </div>
+                    ) : (
+                      reminder.phone
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

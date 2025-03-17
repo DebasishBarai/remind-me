@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Menu } from "lucide-react";
+import { Menu, Users, UserPlus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -33,6 +33,18 @@ const Navbar = () => {
           </Link>
           <Link href="/reminders">
             <Button variant="ghost">Reminders</Button>
+          </Link>
+          <Link href="/contacts">
+            <Button variant="ghost">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Contacts
+            </Button>
+          </Link>
+          <Link href="/groups">
+            <Button variant="ghost">
+              <Users className="h-4 w-4 mr-2" />
+              Groups
+            </Button>
           </Link>
           {session.user?.subscriptionType !== 'premium' && (
             <UpgradeDialog 

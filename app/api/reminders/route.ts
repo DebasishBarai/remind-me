@@ -19,12 +19,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Request body:", body); // Debug log
 
-    const { title, message, dateTime, frequency, phone } = body;
+    const { title, message, dateTime, frequency, phone, groupId } = body;
 
     // Validate required fields
-    if (!title || !message || !dateTime || !phone) {
+    if (!title || !message || !dateTime || (!phone && !groupId)) {
       return NextResponse.json(
-        { error: "Missing required fields", received: { title, message, dateTime, phone } },
+        { error: "Missing required fields. Either phone or groupId must be provided.", received: { title, message, dateTime, phone, groupId } },
         { status: 400 }
       );
     }
@@ -42,19 +42,55 @@ export async function POST(request: Request) {
       );
     }
 
+    // If groupId is provided, check if the group exists and belongs to the user
+    if (groupId) {
+      const group = await prisma.group.findFirst({
+        where: {
+          id: groupId,
+          userId: user.id
+        },
+        include: {
+          contacts: true
+        }
+      });
+
+      if (!group) {
+        return NextResponse.json(
+          { error: "Group not found or does not belong to the user" },
+          { status: 404 }
+        );
+      }
+
+      if (group.contacts.length === 0) {
+        return NextResponse.json(
+          { error: "Group has no contacts" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Create reminder with type-safe data
     const reminderData: Prisma.ReminderCreateInput = {
       title,
       message,
       dateTime: new Date(dateTime),
       frequency: frequency || 'once',
-      phone,
+      phone: phone || '', // Use empty string if phone is not provided (group reminder)
       user: {
         connect: {
           id: user.id
         }
       }
     };
+
+    // If groupId is provided, connect the reminder to the group
+    if (groupId) {
+      reminderData.Group = {
+        connect: {
+          id: groupId
+        }
+      };
+    }
 
     console.log("Creating reminder with data:", reminderData); // Debug log
 
@@ -94,6 +130,13 @@ export async function GET(request: Request) {
       where: { email: session.user.email },
       include: {
         reminders: {
+          include: {
+            Group: {
+              include: {
+                contacts: true
+              }
+            }
+          },
           orderBy: { createdAt: 'desc' },
         },
       },

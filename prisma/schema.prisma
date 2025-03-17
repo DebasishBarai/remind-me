@@ -14,21 +14,23 @@ enum SubscriptionType {
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  image          String?
-  hashedPassword String?
-  isVerified     Boolean   @default(false)
-  verifyToken    String?   @unique
-  subscriptionType SubscriptionType @default(free)
+  id                  String           @id @default(cuid())
+  name                String?
+  email               String?          @unique
+  emailVerified       DateTime?
+  image               String?
+  hashedPassword      String?
+  isVerified          Boolean          @default(false)
+  verifyToken         String?          @unique
+  subscriptionType    SubscriptionType @default(free)
   subscriptionEndDate DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  accounts       Account[]
-  sessions       Session[]
-  reminders      Reminder[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  accounts            Account[]
+  sessions            Session[]
+  reminders           Reminder[]
+  groups              Group[]
+  contacts            Contact[]
 }
 
 model Account {
@@ -78,4 +80,31 @@ model Reminder {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Group     Group?   @relation(fields: [groupId], references: [id])
+  groupId   String?
+}
+
+model Group {
+  id        String     @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts  Contact[]
+  reminders Reminder[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  phone     String
+  name      String?
+  userId    String?
+  groupId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([phone, userId])
 }
