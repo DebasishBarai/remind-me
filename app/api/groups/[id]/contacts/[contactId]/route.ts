@@ -38,7 +38,10 @@ export async function DELETE(
     const contact = await prisma.contact.findFirst({
       where: {
         id: params.contactId,
-        groupId: params.id
+        userId: user.id,
+      },
+      include: {
+        groups: true
       }
     });
 
@@ -49,12 +52,27 @@ export async function DELETE(
       );
     }
 
-    // Delete the contact
-    await prisma.contact.delete({
-      where: { id: params.contactId }
-    });
+    const hasgroup = contact.groups.some(group => group.id === params.id)
 
+    if (hasGroup){
+    // Delete the contact
+    await prisma.contact.update({
+      where: {
+        id: params.contactId,
+        userId: user.id,
+      },
+      data: {
+        groups: {
+          disconnect: {
+            id: params.id
+          }
+        }
+      }
+    })
     return NextResponse.json({ success: true });
+    } else {
+      throw ERROR 'not part of the group'
+    }
   } catch (error) {
     console.error('Error deleting contact:', error);
     return NextResponse.json(
