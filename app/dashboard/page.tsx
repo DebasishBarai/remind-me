@@ -170,8 +170,8 @@ export default function DashboardPage() {
               <Link href="/create">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  New Reminder
-                </Button>
+              New Reminder
+            </Button>
               </Link>
               <Link href="/contacts">
                 <Button variant="outline">
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">All time</p>
               </CardContent>
             </Card>
-          </div>
+      </div>
 
           {/* Recent Reminders */}
           <Card>
@@ -318,8 +318,8 @@ export default function DashboardPage() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
-                    </div>
+              </div>
+            </div>
                   ))}
                 </div>
               )}

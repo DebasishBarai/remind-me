@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -9,16 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, Plus, Trash2, UserPlus, Users, Check } from 'lucide-react';
+import { Loader2, Plus, Trash2, UserPlus, Users, Check, Search, ChevronDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Group {
   id: string;
@@ -54,6 +53,12 @@ export default function GroupsPage() {
   const [isAddingGroup, setIsAddingGroup] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [contactDialogTab, setContactDialogTab] = useState<'new' | 'existing'>('existing');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedContactId, setSelectedContactId] = useState<string>('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -61,6 +66,20 @@ export default function GroupsPage() {
       fetchContacts();
     }
   }, [status]);
+
+  // Add click outside listener to close the dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsSelectOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const fetchGroups = async () => {
     try {
@@ -237,6 +256,7 @@ export default function GroupsPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to add contact to group');
     } finally {
       setIsAddingContact(false);
+      setSelectedContactId('');
     }
   };
 
@@ -297,6 +317,15 @@ export default function GroupsPage() {
       groupContact.phone === contact.phone
     )
   );
+
+  // Filter contacts based on search term
+  const filteredContacts = availableContacts.filter(contact => 
+    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.phone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Get the selected contact name
+  const selectedContact = userContacts.find(contact => contact.id === selectedContactId);
 
   if (isLoading) {
     return (
@@ -470,36 +499,122 @@ export default function GroupsPage() {
                   </Button>
                 </div>
               ) : (
-                <Command className="border rounded-md">
-                  <CommandInput placeholder="Search contacts..." />
-                  <CommandList>
-                    <CommandEmpty>No contacts found.</CommandEmpty>
-                    <CommandGroup>
-                      {availableContacts.map((contact) => (
-                        <CommandItem
-                          key={contact.id}
-                          onSelect={() => handleAddExistingContact(contact.id)}
-                          className="flex items-center justify-between cursor-pointer"
+                <div className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-select">Select Contact</Label>
+                      <div className="relative" ref={dropdownRef}>
+                        <div 
+                          className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-text"
+                          onClick={() => {
+                            if (searchInputRef.current) {
+                              searchInputRef.current.focus();
+                            }
+                            setIsSelectOpen(true);
+                          }}
                         >
-                          <div>
-                            <p>{contact.name}</p>
-                            <p className="text-sm text-muted-foreground">{contact.phone}</p>
+                          <Search className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                          {selectedContact && !isFocused && !searchTerm ? (
+                            <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                              <span className="font-medium">{selectedContact.name}</span>
+                              <span className="ml-1 text-muted-foreground">({selectedContact.phone})</span>
+                            </div>
+                          ) : (
+                            <Input
+                              ref={searchInputRef}
+                              id="contact-search"
+                              placeholder="Type to search contacts..."
+                              className="border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              value={searchTerm}
+                              onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                if (e.target.value) {
+                                  setIsSelectOpen(true);
+                                }
+                              }}
+                              onFocus={() => {
+                                setIsSelectOpen(true);
+                                setIsFocused(true);
+                              }}
+                              onBlur={() => {
+                                setIsFocused(false);
+                              }}
+                            />
+                          )}
+                          <ChevronDown 
+                            className={`ml-auto h-4 w-4 opacity-50 flex-shrink-0 transition-transform duration-200 ${isSelectOpen ? 'transform rotate-180' : ''}`} 
+                          />
+                        </div>
+                        
+                        {isSelectOpen && (
+                          <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                            <div className="p-1">
+                              {filteredContacts.length === 0 ? (
+                                <div className="py-6 text-center text-sm">
+                                  No contacts found
+                                </div>
+                              ) : (
+                                filteredContacts.map((contact) => (
+                                  <div
+                                    key={contact.id}
+                                    className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${selectedContactId === contact.id ? 'bg-accent text-accent-foreground' : ''}`}
+                                    onClick={() => {
+                                      setSelectedContactId(contact.id);
+                                      setSearchTerm('');
+                                      setIsSelectOpen(false);
+                                      if (searchInputRef.current) {
+                                        searchInputRef.current.blur();
+                                      }
+                                    }}
+                                  >
+                                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                                      {selectedContactId === contact.id && (
+                                        <Check className="h-4 w-4" />
+                                      )}
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{contact.name}</span>
+                                      <span className="text-sm text-muted-foreground">{contact.phone}</span>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddExistingContact(contact.id);
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsContactDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (selectedContactId) {
+                            handleAddExistingContact(selectedContactId);
+                            setIsSelectOpen(false);
+                          }
+                        }}
+                        disabled={!selectedContactId || isAddingContact}
+                      >
+                        {isAddingContact ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Add Contact'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
             </TabsContent>
 
