@@ -99,6 +99,7 @@ model Contact {
   id        String   @id @default(cuid())
   phone     String
   name      String?
+
   userId    String
   groupId   String?
   createdAt DateTime @default(now())
