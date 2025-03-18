@@ -61,7 +61,7 @@ export async function POST(
         userId: user.id,
         name,
         phone,
-        group: {
+        groups: {
           connect: {
             id: params.id
           }
