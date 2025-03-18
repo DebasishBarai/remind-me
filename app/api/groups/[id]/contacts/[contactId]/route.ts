@@ -69,9 +69,11 @@ export async function DELETE(
         }
       }
     })
+      
     return NextResponse.json({ success: true });
+      
     } else {
-      throw ERROR 'not part of the group'
+      throw new ERROR 'not part of the group'
     }
   } catch (error) {
     console.error('Error deleting contact:', error);
