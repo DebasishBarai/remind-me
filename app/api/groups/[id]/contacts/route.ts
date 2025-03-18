@@ -49,10 +49,15 @@ export async function POST(
     });
 
     if (existingContact) {
-      return NextResponse.json(
-        { error: "Phone number already exists" },
-        { status: 400 }
-      );
+      const contact = await prisma.contact.update({
+        where: { id: existingContact.id },
+        data: {
+          groups: {
+            connect: { id: params.id }
+          }
+        },
+      })
+      return NextResponse.json(contact);
     }
 
     // Create the contact
