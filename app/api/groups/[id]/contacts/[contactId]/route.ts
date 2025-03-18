@@ -52,7 +52,7 @@ export async function DELETE(
       );
     }
 
-    const hasgroup = contact.groups.some(group => group.id === params.id)
+    const hasGroup = contact.groups.some(group => group.id === params.id)
 
     if (hasGroup){
     // Delete the contact
