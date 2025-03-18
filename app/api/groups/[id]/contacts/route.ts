@@ -62,8 +62,10 @@ export async function POST(
         name,
         phone,
         groups: {
-          connect: { id: params.id }
-        },
+          connect: {
+            id: params.id
+          }
+        }
       }
     });
 
