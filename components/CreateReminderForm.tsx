@@ -199,11 +199,6 @@ export default function CreateReminderForm() {
     }
   };
 
-  const handleSelectContact = (contact: Contact) => {
-    setFormData({ ...formData, phone: contact.phone });
-    setIsContactDialogOpen(false);
-  };
-
   const filteredContacts = userContacts.filter(contact => {
     return (
       contact.name.toLowerCase().includes(contactSearchTerm.toLowerCase()) ||

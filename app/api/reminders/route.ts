@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     // Validate required fields
     if (!title || !message || !dateTime || (!contactId && !groupId)) {
       return NextResponse.json(
-        { error: "Missing required fields. Either contact or group must be provided.", received: { title, message, dateTime, phone, groupId } },
+        { error: "Missing required fields. Either contact or group must be provided.", received: { title, message, dateTime, frequency, contactId, groupId } },
         { status: 400 }
       );
     }
@@ -157,7 +157,7 @@ export async function GET(request: Request) {
       include: {
         reminders: {
           include: {
-            Group: {
+            group: {
               include: {
                 contacts: true
               }
