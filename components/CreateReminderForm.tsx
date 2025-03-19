@@ -134,7 +134,7 @@ export default function CreateReminderForm() {
     }
   };
 
-  const handleAddExistingContact = async ({ contactId }: { contactId: string }) => {
+  const handleAddExistingContact = async (contactId: string) => {
     try {
       setIsAddingContact(true);
 
@@ -412,10 +412,10 @@ export default function CreateReminderForm() {
                           }}
                         >
                           <Search className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                          {temporarilySelectedContactId && !isFocused && !contactSearchTerm ? (
+                          {selectedContact && !isFocused && !contactSearchTerm ? (
                             <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                              <span className="font-medium">{temporarilySelectedContactId.name}</span>
-                              <span className="ml-1 text-muted-foreground">({temporarilySelectedContactId.phone})</span>
+                              <span className="font-medium">{selectedContact.name}</span>
+                              <span className="ml-1 text-muted-foreground">({selectedContact.phone})</span>
                             </div>
                           ) : (
                             <Input
@@ -457,7 +457,7 @@ export default function CreateReminderForm() {
                                     key={contact.id}
                                     className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${selectedContactId === contact.id ? 'bg-accent text-accent-foreground' : ''}`}
                                     onClick={() => {
-                                      setTemporarilySelectedContactId(contact.id);
+                                      setSelectedContactId(contact.id);
                                       setContactSearchTerm('');
                                       setIsSelectOpen(false);
                                       if (searchInputRef.current) {
@@ -466,7 +466,7 @@ export default function CreateReminderForm() {
                                     }}
                                   >
                                     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                                      {temporarilySelectedContactId === contact.id && (
+                                      {selectedContactId === contact.id && (
                                         <Check className="h-4 w-4" />
                                       )}
                                     </span>
@@ -494,12 +494,12 @@ export default function CreateReminderForm() {
                       <Button
                         type="button"
                         onClick={() => {
-                          if (temporarilySelectedContactId) {
-                            handleAddExistingContact({ contactId: temporarilySelectedContactId });
+                          if (selectedContactId) {
+                            handleAddExistingContact(selectedContactId);
                             setIsSelectOpen(false);
                           }
                         }}
-                        disabled={!temporarilySelectedContactId || isAddingContact}
+                        disabled={!selectedContactId || isAddingContact}
                       >
                         {isAddingContact ? (
                           <>
