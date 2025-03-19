@@ -52,6 +52,8 @@ export default function CreateReminderForm() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<string>('');
+  const [selectedContact, setSelectedContact] = useState<Contact | undefined | null>(null);
+  const [temporarilySelectedContact, setTemporarilySelectedContact] = useState<Contact | undefined | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -69,9 +71,6 @@ export default function CreateReminderForm() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  // Get the selected contact name
-  const selectedContact = userContacts.find(contact => contact.id === selectedContactId);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -138,13 +137,16 @@ export default function CreateReminderForm() {
     try {
       setIsAddingContact(true);
 
-      const selectedContact = userContacts.find(c => c.id === contactId);
-      if (!selectedContact) {
+      const contact = userContacts.find(c => c.id === contactId);
+
+
+      if (!contact) {
         toast.error('Contact not found');
         return;
       }
 
-
+      setSelectedContact(contact);
+      setTemporarilySelectedContact(null);
       setIsContactDialogOpen(false);
     } catch (error) {
       console.error('Error adding contact:', error);
@@ -412,10 +414,10 @@ export default function CreateReminderForm() {
                           }}
                         >
                           <Search className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                          {selectedContact && !isFocused && !contactSearchTerm ? (
+                          {temporarilySelectedContact && !isFocused && !contactSearchTerm ? (
                             <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                              <span className="font-medium">{selectedContact.name}</span>
-                              <span className="ml-1 text-muted-foreground">({selectedContact.phone})</span>
+                              <span className="font-medium">{temporarilySelectedContact.name}</span>
+                              <span className="ml-1 text-muted-foreground">({temporarilySelectedContact.phone})</span>
                             </div>
                           ) : (
                             <Input
@@ -457,7 +459,7 @@ export default function CreateReminderForm() {
                                     key={contact.id}
                                     className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${selectedContactId === contact.id ? 'bg-accent text-accent-foreground' : ''}`}
                                     onClick={() => {
-                                      setSelectedContactId(contact.id);
+                                      setTemporarilySelectedContact(contact)
                                       setContactSearchTerm('');
                                       setIsSelectOpen(false);
                                       if (searchInputRef.current) {
@@ -466,7 +468,7 @@ export default function CreateReminderForm() {
                                     }}
                                   >
                                     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                                      {selectedContactId === contact.id && (
+                                      {temporarilySelectedContact?.id === contact.id && (
                                         <Check className="h-4 w-4" />
                                       )}
                                     </span>
@@ -494,12 +496,12 @@ export default function CreateReminderForm() {
                       <Button
                         type="button"
                         onClick={() => {
-                          if (selectedContactId) {
-                            handleAddExistingContact(selectedContactId);
+                          if (temporarilySelectedContact) {
+                            handleAddExistingContact(temporarilySelectedContact.id);
                             setIsSelectOpen(false);
                           }
                         }}
-                        disabled={!selectedContactId || isAddingContact}
+                        disabled={!temporarilySelectedContact || isAddingContact}
                       >
                         {isAddingContact ? (
                           <>

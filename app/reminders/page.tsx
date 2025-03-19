@@ -113,11 +113,11 @@ export default function RemindersPage() {
   };
 
   const filteredReminders = reminders.filter(reminder => {
-    const matchesSearch = 
+    const matchesSearch =
       reminder.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reminder.message.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
+
+    const matchesStatus =
       statusFilter === 'all' ||
       (statusFilter === 'sent' && reminder.sent) ||
       (statusFilter === 'pending' && !reminder.sent);
@@ -236,11 +236,10 @@ export default function RemindersPage() {
                   <TableCell>{format(new Date(reminder.dateTime), 'PPp')}</TableCell>
                   <TableCell className="capitalize">{reminder.frequency}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      reminder.sent 
+                    <span className={`px-2 py-1 rounded-full text-xs ${reminder.sent
                         ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400'
                         : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400'
-                    }`}>
+                      }`}>
                       {reminder.sent ? 'Sent' : 'Pending'}
                     </span>
                   </TableCell>
