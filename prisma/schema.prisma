@@ -74,14 +74,19 @@ model Reminder {
   message   String
   dateTime  DateTime
   frequency String   @default("once")
-  phone     String
   sent      Boolean  @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Group     Group?   @relation(fields: [groupId], references: [id])
-  groupId   String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String?
 }
 
 model Group {
@@ -96,16 +101,17 @@ model Group {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  phone     String
-  name      String?
+  id    String  @id @default(cuid())
+  phone String
+  name  String?
 
   userId    String
   groupId   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   groups    Group[]
+  reminders Reminder[]
 
   @@unique([phone, userId])
 }

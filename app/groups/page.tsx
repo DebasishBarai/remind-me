@@ -11,13 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2, UserPlus, Users, Check, Search, ChevronDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface Group {
   id: string;
@@ -74,7 +67,7 @@ export default function GroupsPage() {
         setIsSelectOpen(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -319,7 +312,7 @@ export default function GroupsPage() {
   );
 
   // Filter contacts based on search term
-  const filteredContacts = availableContacts.filter(contact => 
+  const filteredContacts = availableContacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.phone.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -504,7 +497,7 @@ export default function GroupsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="contact-select">Select Contact</Label>
                       <div className="relative" ref={dropdownRef}>
-                        <div 
+                        <div
                           className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-text"
                           onClick={() => {
                             if (searchInputRef.current) {
@@ -541,11 +534,11 @@ export default function GroupsPage() {
                               }}
                             />
                           )}
-                          <ChevronDown 
-                            className={`ml-auto h-4 w-4 opacity-50 flex-shrink-0 transition-transform duration-200 ${isSelectOpen ? 'transform rotate-180' : ''}`} 
+                          <ChevronDown
+                            className={`ml-auto h-4 w-4 opacity-50 flex-shrink-0 transition-transform duration-200 ${isSelectOpen ? 'transform rotate-180' : ''}`}
                           />
                         </div>
-                        
+
                         {isSelectOpen && (
                           <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
                             <div className="p-1">
@@ -584,11 +577,11 @@ export default function GroupsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => setIsContactDialogOpen(false)}
                       >
                         Cancel

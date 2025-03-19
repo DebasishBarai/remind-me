@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Check, Bell, Calendar, Phone } from "lucide-react";
 import { PricingCards } from "@/components/PricingCards";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -28,9 +28,7 @@ export default function Home() {
                   <Button size="lg">Go to Dashboard</Button>
                 </Link>
               ) : (
-                <Link href="/login">
-                  <Button size="lg">Get Started</Button>
-                </Link>
+                <Button size="lg" onClick={() => signIn()}>Get Started</Button>
               )}
               <Link href="/pricing">
                 <Button variant="outline" size="lg">View Pricing</Button>

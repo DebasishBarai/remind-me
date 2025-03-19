@@ -19,12 +19,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Request body:", body); // Debug log
 
-    const { title, message, dateTime, frequency, phone, groupId } = body;
+    const { title, message, dateTime, frequency, contactId, groupId } = body;
 
     // Validate required fields
-    if (!title || !message || !dateTime || (!phone && !groupId)) {
+    if (!title || !message || !dateTime || (!contactId && !groupId)) {
       return NextResponse.json(
-        { error: "Missing required fields. Either phone or groupId must be provided.", received: { title, message, dateTime, phone, groupId } },
+        { error: "Missing required fields. Either contact or group must be provided.", received: { title, message, dateTime, phone, groupId } },
         { status: 400 }
       );
     }
@@ -40,6 +40,24 @@ export async function POST(request: Request) {
         { error: "User not found" },
         { status: 404 }
       );
+    }
+
+    // If contactId is provided, check if the contact exists and belongs to the user
+    if (contactId) {
+      const contact = await prisma.contact.findFirst({
+        where: {
+          id: contactId,
+          userId: user.id
+        }
+      });
+
+      if (!contact) {
+        return NextResponse.json(
+          { error: "Contact not found or does not belong to the user" },
+          { status: 404 }
+        );
+      }
+
     }
 
     // If groupId is provided, check if the group exists and belongs to the user
@@ -75,7 +93,6 @@ export async function POST(request: Request) {
       message,
       dateTime: new Date(dateTime),
       frequency: frequency || 'once',
-      phone: phone || '', // Use empty string if phone is not provided (group reminder)
       user: {
         connect: {
           id: user.id
@@ -83,9 +100,18 @@ export async function POST(request: Request) {
       }
     };
 
+    // If contactId is provided, connect the reminder to the contact
+    if (contactId) {
+      reminderData.contact = {
+        connect: {
+          id: contactId
+        }
+      };
+    }
+
     // If groupId is provided, connect the reminder to the group
     if (groupId) {
-      reminderData.Group = {
+      reminderData.group = {
         connect: {
           id: groupId
         }

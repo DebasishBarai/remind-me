@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, Users, UserPlus, Search } from 'lucide-react';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Loader2, Users, UserPlus, Search, ChevronDown, Check } from 'lucide-react';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface Group {
@@ -37,7 +30,7 @@ export default function CreateReminderForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const groupIdParam = searchParams.get('groupId');
-  
+
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -54,13 +47,38 @@ export default function CreateReminderForm() {
   const [reminderType, setReminderType] = useState<'individual' | 'group'>(groupIdParam ? 'group' : 'individual');
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [contactSearchTerm, setContactSearchTerm] = useState('');
-  
+
+  const availableContacts = userContacts
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isAddingContact, setIsAddingContact] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Add click outside listener to close the dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsSelectOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Get the selected contact name
+  const selectedContact = userContacts.find(contact => contact.id === selectedContactId);
+
   const [formData, setFormData] = useState({
     title: '',
     message: '',
     dateTime: '',
     frequency: 'once',
-    phone: '',
+    contactId: '',
     groupId: groupIdParam || '',
   });
 
@@ -116,14 +134,39 @@ export default function CreateReminderForm() {
     }
   };
 
+  const handleAddExistingContact = async (contactId: string) => {
+    try {
+      setIsAddingContact(true);
+
+      const selectedContact = userContacts.find(c => c.id === contactId);
+      if (!selectedContact) {
+        toast.error('Contact not found');
+        return;
+      }
+
+
+      setIsContactDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding contact:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add contact');
+    } finally {
+      setIsAddingContact(false);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const payload = reminderType === 'individual' 
-        ? { ...formData, groupId: undefined } 
-        : { ...formData, phone: '' };
+      if (reminderType === 'individual' && !selectedContact) {
+        toast.error('Please select a contact');
+        return;
+      }
+
+      const payload = reminderType === 'individual'
+        ? { ...formData, contactId: selectedContact?.id, groupId: undefined }
+        : { ...formData, contactId: '' };
 
       console.log("Submitting form data:", payload);
 
@@ -178,8 +221,8 @@ export default function CreateReminderForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs 
-            defaultValue={reminderType} 
+          <Tabs
+            defaultValue={reminderType}
             value={reminderType}
             onValueChange={(value) => setReminderType(value as 'individual' | 'group')}
             className="mb-6"
@@ -244,19 +287,20 @@ export default function CreateReminderForm() {
 
             {reminderType === 'individual' ? (
               <div className="space-y-2">
-                <Label htmlFor="phone">WhatsApp Number</Label>
+                <Label htmlFor="phone">WhatsApp Contact</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+1234567890"
-                    required
-                    className="flex-1"
-                  />
-                  <Button 
-                    type="button" 
+                  {selectedContact ? (
+                    <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      <span className="font-medium">{selectedContact.name}</span>
+                      <span className="ml-1 text-muted-foreground">({selectedContact.phone})</span>
+                    </div>
+                  ) : (
+                    <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      Select Contact
+                    </div>
+                  )}
+                  <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setIsContactDialogOpen(true)}
                   >
@@ -276,9 +320,9 @@ export default function CreateReminderForm() {
                 ) : groups.length === 0 ? (
                   <div className="py-2">
                     <p className="text-sm text-muted-foreground mb-2">You don&apos;t have any groups yet.</p>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => router.push('/groups')}
                     >
@@ -323,7 +367,7 @@ export default function CreateReminderForm() {
           <DialogHeader>
             <DialogTitle>Select Contact</DialogTitle>
           </DialogHeader>
-          
+
           {isLoadingContacts ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -331,8 +375,8 @@ export default function CreateReminderForm() {
           ) : userContacts.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-muted-foreground mb-2">No contacts found</p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => router.push('/contacts')}
               >
@@ -342,52 +386,140 @@ export default function CreateReminderForm() {
             </div>
           ) : (
             <div className="mt-4">
-              <div className="relative mb-4">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search contacts..."
-                  value={contactSearchTerm}
-                  onChange={(e) => setContactSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-              
-              <Command className="border rounded-md">
-                <CommandList>
-                  <CommandEmpty>No contacts found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredContacts.map((contact) => (
-                      <CommandItem
-                        key={contact.id}
-                        onSelect={() => handleSelectContact(contact)}
-                        className="flex items-center justify-between cursor-pointer"
-                      >
-                        <div>
-                          <p>{contact.name}</p>
-                          <p className="text-sm text-muted-foreground">{contact.phone}</p>
+              {isLoadingContacts ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : availableContacts.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground mb-2">No available contacts</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/contacts')}
+                  >
+                    Manage Contacts
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-select">Select Contact</Label>
+                      <div className="relative" ref={dropdownRef}>
+                        <div
+                          className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-text"
+                          onClick={() => {
+                            if (searchInputRef.current) {
+                              searchInputRef.current.focus();
+                            }
+                            setIsSelectOpen(true);
+                          }}
+                        >
+                          <Search className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                          {selectedContact && !isFocused && !contactSearchTerm ? (
+                            <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                              <span className="font-medium">{selectedContact.name}</span>
+                              <span className="ml-1 text-muted-foreground">({selectedContact.phone})</span>
+                            </div>
+                          ) : (
+                            <Input
+                              ref={searchInputRef}
+                              id="contact-search"
+                              placeholder="Type to search contacts..."
+                              className="border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              value={contactSearchTerm}
+                              onChange={(e) => {
+                                setContactSearchTerm(e.target.value);
+                                if (e.target.value) {
+                                  setIsSelectOpen(true);
+                                }
+                              }}
+                              onFocus={() => {
+                                setIsSelectOpen(true);
+                                setIsFocused(true);
+                              }}
+                              onBlur={() => {
+                                setIsFocused(false);
+                              }}
+                            />
+                          )}
+                          <ChevronDown
+                            className={`ml-auto h-4 w-4 opacity-50 flex-shrink-0 transition-transform duration-200 ${isSelectOpen ? 'transform rotate-180' : ''}`}
+                          />
                         </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-              
-              <div className="flex justify-between mt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => router.push('/contacts')}
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Manage Contacts
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsContactDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
+
+                        {isSelectOpen && (
+                          <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                            <div className="p-1">
+                              {filteredContacts.length === 0 ? (
+                                <div className="py-6 text-center text-sm">
+                                  No contacts found
+                                </div>
+                              ) : (
+                                filteredContacts.map((contact) => (
+                                  <div
+                                    key={contact.id}
+                                    className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${selectedContactId === contact.id ? 'bg-accent text-accent-foreground' : ''}`}
+                                    onClick={() => {
+                                      setSelectedContactId(contact.id);
+                                      setContactSearchTerm('');
+                                      setIsSelectOpen(false);
+                                      if (searchInputRef.current) {
+                                        searchInputRef.current.blur();
+                                      }
+                                    }}
+                                  >
+                                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                                      {selectedContactId === contact.id && (
+                                        <Check className="h-4 w-4" />
+                                      )}
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{contact.name}</span>
+                                      <span className="text-sm text-muted-foreground">{contact.phone}</span>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsContactDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (selectedContactId) {
+                            handleAddExistingContact(selectedContactId);
+                            setIsSelectOpen(false);
+                          }
+                        }}
+                        disabled={!selectedContactId || isAddingContact}
+                      >
+                        {isAddingContact ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Add Contact'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
         </DialogContent>
