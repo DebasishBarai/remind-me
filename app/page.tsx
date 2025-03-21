@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Check, Bell, Calendar, Phone } from "lucide-react";
+import { Check, Megaphone, Users, TrendingUp } from "lucide-react";
 import { PricingCards } from "@/components/PricingCards";
 import { signIn, useSession } from "next-auth/react";
 
@@ -16,11 +16,10 @@ export default function Home() {
         <div className="container mx-auto px-4 py-20">
           <div className="text-center space-y-6 max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold">
-              Never Miss Important Reminders with WhatsApp
+              Boost Your Business with Scheduled WhatsApp Campaigns
             </h1>
             <p className="text-xl text-muted-foreground">
-              Set up automated WhatsApp reminders for important events, tasks, and meetings.
-              Stay organized and never forget what matters most.
+              Engage customers, promote offers, and drive sales with automated WhatsApp marketing campaigns.
             </p>
             <div className="flex justify-center gap-4">
               {session ? (
@@ -28,7 +27,7 @@ export default function Home() {
                   <Button size="lg">Go to Dashboard</Button>
                 </Link>
               ) : (
-                <Button size="lg" onClick={() => signIn()}>Get Started</Button>
+                <Button size="lg" onClick={() => signIn()}>Start Marketing</Button>
               )}
               <Link href="/pricing">
                 <Button variant="outline" size="lg">View Pricing</Button>
@@ -42,28 +41,28 @@ export default function Home() {
       <section className="bg-muted/50 py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Why Choose RemindMe?
+            Why Choose PromoWhatsApp?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-card p-6 rounded-lg shadow-sm">
-              <Bell className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Instant Notifications</h3>
+              <Megaphone className="h-12 w-12 text-primary mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Targeted Promotions</h3>
               <p className="text-muted-foreground">
-                Receive reminders directly on WhatsApp, ensuring you never miss important updates.
+                Send personalized offers and discounts directly to your customers' WhatsApp, increasing conversion rates.
               </p>
             </div>
             <div className="bg-card p-6 rounded-lg shadow-sm">
-              <Calendar className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Flexible Scheduling</h3>
+              <Users className="h-12 w-12 text-primary mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Customer Engagement</h3>
               <p className="text-muted-foreground">
-                Set one-time or recurring reminders with custom frequencies to match your needs.
+                Build stronger relationships with automated yet personalized campaign messages to your customer base.
               </p>
             </div>
             <div className="bg-card p-6 rounded-lg shadow-sm">
-              <Phone className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Easy Setup</h3>
+              <TrendingUp className="h-12 w-12 text-primary mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Increased Sales</h3>
               <p className="text-muted-foreground">
-                Simple integration with WhatsApp - no additional apps or installations required.
+                Drive more revenue with timely promotional campaigns that reach customers where they're most active.
               </p>
             </div>
           </div>
