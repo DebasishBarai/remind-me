@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const reminderData: Prisma.ReminderCreateInput = {
       title,
       message,
-      dateTime: new Date(dateTime),
+      dateTime: new Date(new Date(dateTime).toISOString()),
       frequency: frequency || 'once',
       user: {
         connect: {
