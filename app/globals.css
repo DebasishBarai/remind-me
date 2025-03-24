@@ -100,15 +100,15 @@
   .bg-gradient-primary {
     @apply bg-gradient-to-r from-blue-600 to-indigo-600;
   }
-  
+
   .bg-gradient-primary-hover {
     @apply bg-gradient-to-r from-blue-700 to-indigo-700;
   }
-  
+
   .bg-gradient-heading {
     @apply bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent;
   }
-  
+
   .bg-subtle {
     @apply bg-slate-50 dark:bg-slate-800;
   }
