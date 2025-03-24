@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { Suspense } from 'react';
 
-export default function SuccessPage() {
+// Success content component that uses search params
+function SuccessContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,5 +75,28 @@ export default function SuccessPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function SuccessLoading() {
+  return (
+    <div className="container mx-auto px-4 py-12 max-w-3xl">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-8 shadow-sm text-center">
+        <div className="py-8">
+          <Loader2 className="h-16 w-16 animate-spin mx-auto text-blue-500 mb-4" />
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Loading subscription details...</h2>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component that wraps the content with Suspense
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<SuccessLoading />}>
+      <SuccessContent />
+    </Suspense>
   );
 } 

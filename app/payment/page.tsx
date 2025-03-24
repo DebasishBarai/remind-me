@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Loader2, CreditCard, Check } from "lucide-react";
+import { Loader2, CreditCard } from "lucide-react";
+import { Suspense } from 'react';
 
-export default function PaymentPage() {
+// This component uses the search params
+function PaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -150,5 +152,28 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function PaymentLoading() {
+  return (
+    <div className="container mx-auto px-4 py-12 max-w-3xl">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-8 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+          <h2 className="text-xl font-medium text-slate-800 dark:text-slate-200">Loading payment details...</h2>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component that wraps the content with Suspense
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<PaymentLoading />}>
+      <PaymentContent />
+    </Suspense>
   );
 } 
