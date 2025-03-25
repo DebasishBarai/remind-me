@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Plus, Trash2, Search, Edit, UserPlus } from 'lucide-react';
+import { Loader2, Plus, Trash2, Search, Edit, UserPlus, ChevronDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   Table,
@@ -29,6 +29,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { countryCodes, type CountryCode } from '@/lib/country-codes';
 
 interface Contact {
   id: string;
@@ -49,8 +57,9 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [newContact, setNewContact] = useState({ name: '', phone: '' });
+  const [newContact, setNewContact] = useState({ name: '', countryCode: '+1', phoneNumber: '' });
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [editingContactForm, setEditingContactForm] = useState({ name: '', countryCode: '+1', phoneNumber: '' });
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
@@ -81,10 +90,13 @@ export default function ContactsPage() {
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newContact.name.trim() || !newContact.phone.trim()) {
+    if (!newContact.name.trim() || !newContact.phoneNumber.trim()) {
       toast.error('Name and phone number are required');
       return;
     }
+
+    // Combine country code and phone number
+    const fullPhoneNumber = `${newContact.countryCode}${newContact.phoneNumber.startsWith('0') ? newContact.phoneNumber.substring(1) : newContact.phoneNumber}`;
 
     try {
       setIsAddingContact(true);
@@ -93,7 +105,10 @@ export default function ContactsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newContact),
+        body: JSON.stringify({
+          name: newContact.name,
+          phone: fullPhoneNumber,
+        }),
       });
 
       if (!res.ok) {
@@ -103,7 +118,7 @@ export default function ContactsPage() {
 
       const newContactData = await res.json();
       setContacts([...contacts, newContactData]);
-      setNewContact({ name: '', phone: '' });
+      setNewContact({ name: '', countryCode: '+1', phoneNumber: '' });
       setIsContactDialogOpen(false);
       toast.success('Contact added successfully');
     } catch (error) {
@@ -114,15 +129,43 @@ export default function ContactsPage() {
     }
   };
 
+  const handleStartEditing = (contact: Contact) => {
+    // More robust parsing of the phone number to extract country code
+    let countryCode = '+1'; // Default
+    let phoneNumber = contact.phone;
+    
+    // Find the longest matching country code
+    const matchingCode = countryCodes
+      .map(country => country.dial_code)
+      .sort((a, b) => b.length - a.length) // Sort by length descending to match longest codes first
+      .find(code => contact.phone.startsWith(code));
+    
+    if (matchingCode) {
+      countryCode = matchingCode;
+      phoneNumber = contact.phone.substring(matchingCode.length);
+    }
+    
+    setEditingContact(contact);
+    setEditingContactForm({
+      name: contact.name,
+      countryCode,
+      phoneNumber,
+    });
+    setIsContactDialogOpen(true);
+  };
+
   const handleEditContact = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!editingContact) return;
 
-    if (!editingContact.name.trim() || !editingContact.phone.trim()) {
+    if (!editingContactForm.name.trim() || !editingContactForm.phoneNumber.trim()) {
       toast.error('Name and phone number are required');
       return;
     }
+
+    // Combine country code and phone number
+    const fullPhoneNumber = `${editingContactForm.countryCode}${editingContactForm.phoneNumber.startsWith('0') ? editingContactForm.phoneNumber.substring(1) : editingContactForm.phoneNumber}`;
 
     try {
       setIsEditingContact(true);
@@ -132,8 +175,8 @@ export default function ContactsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: editingContact.name,
-          phone: editingContact.phone,
+          name: editingContactForm.name,
+          phone: fullPhoneNumber,
         }),
       });
 
@@ -205,7 +248,7 @@ export default function ContactsPage() {
           />
         </div>
         <Button onClick={() => {
-          setNewContact({ name: '', phone: '' });
+          setNewContact({ name: '', countryCode: '+1', phoneNumber: '' });
           setEditingContact(null);
           setIsContactDialogOpen(true);
         }}>
@@ -219,7 +262,7 @@ export default function ContactsPage() {
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground mb-4">You don&apos;t have any contacts yet.</p>
             <Button onClick={() => {
-              setNewContact({ name: '', phone: '' });
+              setNewContact({ name: '', countryCode: '+1', phoneNumber: '' });
               setEditingContact(null);
               setIsContactDialogOpen(true);
             }}>
@@ -263,10 +306,7 @@ export default function ContactsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => {
-                                setEditingContact(contact);
-                                setIsContactDialogOpen(true);
-                              }}
+                              onClick={() => handleStartEditing(contact)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -323,10 +363,10 @@ export default function ContactsPage() {
               <Label htmlFor="contactName">Name</Label>
               <Input
                 id="contactName"
-                value={editingContact ? editingContact.name : newContact.name}
+                value={editingContact ? editingContactForm.name : newContact.name}
                 onChange={(e) => {
                   if (editingContact) {
-                    setEditingContact({ ...editingContact, name: e.target.value });
+                    setEditingContactForm({ ...editingContactForm, name: e.target.value });
                   } else {
                     setNewContact({ ...newContact, name: e.target.value });
                   }
@@ -337,19 +377,48 @@ export default function ContactsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="contactPhone">WhatsApp Number</Label>
-              <Input
-                id="contactPhone"
-                value={editingContact ? editingContact.phone : newContact.phone}
-                onChange={(e) => {
-                  if (editingContact) {
-                    setEditingContact({ ...editingContact, phone: e.target.value });
-                  } else {
-                    setNewContact({ ...newContact, phone: e.target.value });
-                  }
-                }}
-                placeholder="+1234567890"
-                required
-              />
+              <div className="flex gap-2">
+                <Select
+                  value={editingContact ? editingContactForm.countryCode : newContact.countryCode}
+                  onValueChange={(value) => {
+                    if (editingContact) {
+                      setEditingContactForm({ ...editingContactForm, countryCode: value });
+                    } else {
+                      setNewContact({ ...newContact, countryCode: value });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue placeholder="Code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryCodes.map((country) => (
+                      <SelectItem key={country.code} value={country.dial_code}>
+                        <span className="flex items-center">
+                          {country.dial_code} ({country.code})
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="contactPhone"
+                  value={editingContact ? editingContactForm.phoneNumber : newContact.phoneNumber}
+                  onChange={(e) => {
+                    if (editingContact) {
+                      setEditingContactForm({ ...editingContactForm, phoneNumber: e.target.value });
+                    } else {
+                      setNewContact({ ...newContact, phoneNumber: e.target.value });
+                    }
+                  }}
+                  placeholder="Phone number without country code"
+                  className="flex-1"
+                  required
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Example: Select +1, then enter 2025550123
+              </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsContactDialogOpen(false)}>

@@ -1,18 +1,28 @@
 'use client'
 
 import Link from "next/link";
-import { Check, Star, Zap, BarChart, Users, MessageSquare, FileSpreadsheet, PhoneCall, CalendarDays, Gift } from "lucide-react";
+import { Check, Star, Zap, BarChart, Users, MessageSquare, FileSpreadsheet, PhoneCall, CalendarDays, Gift, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export function PricingCards() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
-  // Calculate yearly prices (33% discount)
+  // Original prices (to be shown with strikethrough)
+  const basicOriginalMonthly = 199;
+  const premiumOriginalMonthly = 299;
+
+  // Early bird discounted prices
   const basicMonthly = 99;
   const premiumMonthly = 199;
+
+  // Calculate yearly prices (33% discount)
   const basicYearly = Math.floor(basicMonthly * 12 * 0.67 / 100) * 100 + 99; // 33% off
   const premiumYearly = Math.floor(premiumMonthly * 12 * 0.67 / 100) * 100 + 99; // 33% off
+
+  // Calculate original yearly prices
+  const basicOriginalYearly = Math.floor(basicOriginalMonthly * 12 * 0.67 / 100) * 100 + 99;
+  const premiumOriginalYearly = 2399;
 
   // Calculate monthly equivalent for yearly plans
   const basicMonthlyEquivalent = Math.round(basicYearly / 12);
@@ -33,8 +43,8 @@ export function PricingCards() {
           <button
             onClick={() => setBillingCycle("monthly")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly"
-                ? "bg-white dark:bg-slate-700 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+              ? "bg-white dark:bg-slate-700 shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
               }`}
           >
             Monthly
@@ -42,8 +52,8 @@ export function PricingCards() {
           <button
             onClick={() => setBillingCycle("yearly")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${billingCycle === "yearly"
-                ? "bg-white dark:bg-slate-700 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+              ? "bg-white dark:bg-slate-700 shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
               }`}
           >
             Yearly
@@ -53,6 +63,14 @@ export function PricingCards() {
               </span>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Early bird offer banner */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-3 rounded-lg mb-8 max-w-5xl mx-auto">
+        <div className="flex items-center justify-center">
+          <Rocket className="h-5 w-5 mr-2" />
+          <p className="font-medium">Early Bird Offer: Limited-time special pricing!</p>
         </div>
       </div>
 
@@ -75,6 +93,11 @@ export function PricingCards() {
 
           <div className="mb-8">
             <div className="flex items-baseline">
+              {/* Original price with strikethrough */}
+              <span className="text-2xl line-through text-slate-400 dark:text-slate-500 mr-2">
+                ${billingCycle === "monthly" ? basicOriginalMonthly : basicOriginalYearly}
+              </span>
+              {/* Discounted price */}
               <span className="text-5xl font-bold text-slate-800 dark:text-slate-200">
                 ${billingCycle === "monthly" ? basicMonthly : basicYearly}
               </span>
@@ -147,6 +170,11 @@ export function PricingCards() {
 
           <div className="mb-8">
             <div className="flex items-baseline">
+              {/* Original price with strikethrough */}
+              <span className="text-2xl line-through text-slate-400 dark:text-slate-500 mr-2">
+                ${billingCycle === "monthly" ? premiumOriginalMonthly : premiumOriginalYearly}
+              </span>
+              {/* Discounted price */}
               <span className="text-5xl font-bold text-slate-800 dark:text-slate-200">
                 ${billingCycle === "monthly" ? premiumMonthly : premiumYearly}
               </span>
