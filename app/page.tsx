@@ -139,7 +139,7 @@ export default function Home() {
                   <p className="text-sm font-medium text-green-800 dark:text-green-200">Check out our new promotion! 🎉</p>
                 </div>
                 <div className="absolute left-10 bottom-36 bg-white dark:bg-slate-700 p-4 rounded-lg rounded-tl-none shadow-lg transform -rotate-2 z-10 max-w-[180px] backdrop-blur-sm border border-slate-200 dark:border-slate-600">
-                  <p className="text-sm font-medium dark:text-white">I'm interested! Tell me more about the offer. 👍</p>
+                  <p className="text-sm font-medium dark:text-white">I&apos;m interested! Tell me more about the offer. 👍</p>
                 </div>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Targeted Promotions</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Send personalized offers and discounts directly to your customers' WhatsApp, increasing conversion rates.
+                Send personalized offers and discounts directly to your customers&apos; WhatsApp, increasing conversion rates.
               </p>
             </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Increased Sales</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Drive more revenue with timely promotional campaigns that reach customers where they're most active.
+                Drive more revenue with timely promotional campaigns that reach customers where they&apos;re most active.
               </p>
             </div>
           </div>
