@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard } from "lucide-react";
 import { Suspense } from 'react';
 import { useSession, signIn } from 'next-auth/react';
+import PayPalSubscriptionButton from '@/components/paypal/paypal-subscription-button';
 
 // This component uses the search params
 function PaymentContent() {
@@ -59,7 +60,7 @@ function PaymentContent() {
         interval: 'month'
       },
       yearly: {
-        price: '$795',
+        price: '$799',
         interval: 'year'
       }
     },
@@ -117,6 +118,10 @@ function PaymentContent() {
     }
   };
 
+  const handleSubscriptionSuccess = async (subscriptionId: string) => {
+    console.log('Subscription ID:', subscriptionId);
+  };
+
   // Redirect if no plan is selected
   useEffect(() => {
     if (!plan) {
@@ -161,24 +166,30 @@ function PaymentContent() {
         )}
 
         <div className="space-y-4">
-          <Button
-            onClick={handleSubscribe}
-            className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md flex items-center justify-center"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CreditCard className="mr-2 h-5 w-5" />
-                Subscribe with PayPal
-              </>
-            )}
-          </Button>
-
+          {/* <Button */}
+          {/*   onClick={handleSubscribe} */}
+          {/*   className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md flex items-center justify-center" */}
+          {/*   disabled={loading} */}
+          {/* > */}
+          {/*   {loading ? ( */}
+          {/*     <> */}
+          {/*       <Loader2 className="mr-2 h-5 w-5 animate-spin" /> */}
+          {/*       Processing... */}
+          {/*     </> */}
+          {/*   ) : ( */}
+          {/*     <> */}
+          {/*       <CreditCard className="mr-2 h-5 w-5" /> */}
+          {/*       Subscribe with PayPal */}
+          {/*     </> */}
+          {/*   )} */}
+          {/* </Button> */}
+          <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
+            <PayPalSubscriptionButton
+              clientId="AU4L6AD6WnFxAfgbFhTKK63nF-BJFzEeGmOrgHGM8qeCocCVwSjdsWyGAuIvO5sAVEBt18cSbst-LEZD"
+              planId="P-0EF600298K399631JM7RZC7I"
+              onSubscriptionSuccess={handleSubscriptionSuccess}
+            />
+          </div>
           <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
             By subscribing, you agree to our Terms of Service and Privacy Policy.
             You can cancel your subscription at any time.

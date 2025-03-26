@@ -9,8 +9,8 @@ const PAYPAL_API = process.env.NODE_ENV === 'production'
 
 // Use appropriate credentials based on environment
 const PAYPAL_CLIENT_ID = process.env.NODE_ENV === 'production'
-  ? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
-  : process.env.NEXT_PUBLIC_SANDBOX_PAYPAL_CLIENT_ID;
+  ? process.env.PAYPAL_CLIENT_ID
+  : process.env.SANDBOX_PAYPAL_CLIENT_ID;
 
 const PAYPAL_SECRET_KEY = process.env.NODE_ENV === 'production'
   ? process.env.PAYPAL_SECRET_KEY
