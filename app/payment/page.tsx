@@ -57,22 +57,26 @@ function PaymentContent() {
       name: 'Basic Plan',
       monthly: {
         price: '$99',
-        interval: 'month'
+        interval: 'month',
+        id: "P-49361144BF717873PM7R6AXA"
       },
       yearly: {
         price: '$799',
-        interval: 'year'
+        interval: 'year',
+        id: "P-9T4050966V6815908M7SOORA"
       }
     },
     premium: {
       name: 'Premium Plan',
       monthly: {
         price: '$199',
-        interval: 'month'
+        interval: 'month',
+        id: "P-4HG412572X9641144M7SOFWY"
       },
       yearly: {
         price: '$1,599',
-        interval: 'year'
+        interval: 'year',
+        id: "P-5JU59787DH8741227M7SOMYY"
       }
     }
   };
@@ -80,6 +84,7 @@ function PaymentContent() {
   // Get current plan details
   const currentPlan = plan === 'basic' ? planDetails.basic : planDetails.premium;
   const currentBilling = billing === 'yearly' ? currentPlan.yearly : currentPlan.monthly;
+  const currentPlanId = currentBilling.id;
 
   const handleSubscribe = async () => {
     if (!plan) return;
@@ -186,7 +191,7 @@ function PaymentContent() {
           <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
             <PayPalSubscriptionButton
               clientId="AU4L6AD6WnFxAfgbFhTKK63nF-BJFzEeGmOrgHGM8qeCocCVwSjdsWyGAuIvO5sAVEBt18cSbst-LEZD"
-              planId="P-0EF600298K399631JM7RZC7I"
+              planId={currentPlanId}
               onSubscriptionSuccess={handleSubscriptionSuccess}
             />
           </div>
