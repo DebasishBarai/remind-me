@@ -96,7 +96,12 @@ export function UpgradeOptions({ currentPlan, isTrialExpired }: UpgradeOptionsPr
 
         <div className="grid md:grid-cols-2 gap-4">
           {currentPlan === 'free' && (
-            <Card className="border-2 border-primary/20">
+            <Card className="border-2 border-primary/20 relative">
+              {billingCycle === "yearly" && (
+                <div className="absolute -top-3 right-6 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm flex items-center">
+                  <Gift className="h-3 w-3 mr-1" /> Save 33%
+                </div>
+              )}
               <CardHeader>
                 <CardTitle className="text-xl">Basic Plan</CardTitle>
                 <div className="flex items-baseline">
