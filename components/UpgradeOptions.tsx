@@ -22,7 +22,7 @@ export function UpgradeOptions({ currentPlan, isTrialExpired }: UpgradeOptionsPr
   // Original prices
   const basicOriginalMonthly = 199;
   const premiumOriginalMonthly = 299;
-  
+
   // Early bird discounted prices
   const basicMonthly = 99;
   const premiumMonthly = 199;
@@ -52,7 +52,7 @@ export function UpgradeOptions({ currentPlan, isTrialExpired }: UpgradeOptionsPr
           {currentPlan === 'basic'
             ? 'Get access to all premium features and unlimited messaging'
             : isTrialExpired
-              ? 'Your free trial has expired. Choose a plan to continue using PromoWhatsApp'
+              ? 'Choose a plan to continue using RemindMe'
               : 'Upgrade now to unlock more features and messaging capacity'}
         </CardDescription>
       </CardHeader>
@@ -62,21 +62,19 @@ export function UpgradeOptions({ currentPlan, isTrialExpired }: UpgradeOptionsPr
           <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
             <button
               onClick={() => setBillingCycle("monthly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                billingCycle === "monthly" 
-                  ? "bg-white dark:bg-slate-700 shadow-sm" 
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-              }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly"
+                ? "bg-white dark:bg-slate-700 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle("yearly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                billingCycle === "yearly" 
-                  ? "bg-white dark:bg-slate-700 shadow-sm" 
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-              }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${billingCycle === "yearly"
+                ? "bg-white dark:bg-slate-700 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                }`}
             >
               Yearly
               {billingCycle === "yearly" && (

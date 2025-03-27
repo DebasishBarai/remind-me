@@ -157,9 +157,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Show upgrade prompt if trial expired */}
-      {userData?.subscriptionType === 'free' && trialStatus.isExpired && (
-        <UpgradePrompt />
-      )}
+      {/* {userData?.subscriptionType === 'free' && trialStatus.isExpired && ( */}
+      {/*   <UpgradePrompt /> */}
+      {/* )} */}
 
       {/* Only show dashboard content if trial is active or user has paid plan */}
       {(!trialStatus.isExpired || userData?.subscriptionType !== 'free') ? (
@@ -284,8 +284,8 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className={`px-2 py-1 rounded-full text-xs ${reminder.sent
-                            ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400'
+                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400'
                           }`}>
                           {reminder.sent ? 'Sent' : 'Pending'}
                         </span>
