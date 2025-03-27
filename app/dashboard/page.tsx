@@ -81,7 +81,7 @@ export default function DashboardPage() {
           fetch('/api/reminders'),
           fetch('/api/user')
         ]);
-        
+
         const remindersData = await remindersRes.json();
         const userData = await userRes.json();
 
@@ -170,8 +170,8 @@ export default function DashboardPage() {
               <Link href="/create">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-              New Reminder
-            </Button>
+                  New Reminder
+                </Button>
               </Link>
               <Link href="/contacts">
                 <Button variant="outline">
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">All time</p>
               </CardContent>
             </Card>
-      </div>
+          </div>
 
           {/* Recent Reminders */}
           <Card>
@@ -283,11 +283,10 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          reminder.sent 
+                        <span className={`px-2 py-1 rounded-full text-xs ${reminder.sent
                             ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400'
                             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400'
-                        }`}>
+                          }`}>
                           {reminder.sent ? 'Sent' : 'Pending'}
                         </span>
                         <AlertDialog>
@@ -318,8 +317,8 @@ export default function DashboardPage() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-              </div>
-            </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -327,8 +326,8 @@ export default function DashboardPage() {
           </Card>
         </>
       ) : (
-        <UpgradeOptions 
-          currentPlan={userData?.subscriptionType || 'free'} 
+        <UpgradeOptions
+          currentPlan={userData?.subscriptionType || 'free'}
           isTrialExpired={true}
         />
       )}
