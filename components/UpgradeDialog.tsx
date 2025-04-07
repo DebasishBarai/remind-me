@@ -28,7 +28,7 @@ export function UpgradeDialog({ currentPlan, isTrialExpired }: UpgradeDialogProp
   // Original prices
   const basicOriginalMonthly = 199;
   const premiumOriginalMonthly = 299;
-  
+
   // Early bird discounted prices
   const basicMonthly = 99;
   const premiumMonthly = 199;
@@ -78,21 +78,19 @@ export function UpgradeDialog({ currentPlan, isTrialExpired }: UpgradeDialogProp
           <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
             <button
               onClick={() => setBillingCycle("monthly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                billingCycle === "monthly" 
-                  ? "bg-white dark:bg-slate-700 shadow-sm" 
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === "monthly"
+                  ? "bg-white dark:bg-slate-700 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-              }`}
+                }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle("yearly")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                billingCycle === "yearly" 
-                  ? "bg-white dark:bg-slate-700 shadow-sm" 
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${billingCycle === "yearly"
+                  ? "bg-white dark:bg-slate-700 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-              }`}
+                }`}
             >
               Yearly
               {billingCycle === "yearly" && (
@@ -108,7 +106,7 @@ export function UpgradeDialog({ currentPlan, isTrialExpired }: UpgradeDialogProp
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-3 rounded-lg mb-6">
           <div className="flex items-center justify-center">
             <Rocket className="h-5 w-5 mr-2" />
-            <p className="font-medium">Early Bird Offer: Limited-time special pricing!</p>
+            <p className="font-medium">Early Bird Offer: Limited-time special pricing for first 100 customers!</p>
           </div>
         </div>
 

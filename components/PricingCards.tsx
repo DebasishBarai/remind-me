@@ -70,7 +70,7 @@ export function PricingCards() {
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-3 rounded-lg mb-8 max-w-5xl mx-auto">
         <div className="flex items-center justify-center">
           <Rocket className="h-5 w-5 mr-2" />
-          <p className="font-medium">Early Bird Offer: Limited-time special pricing!</p>
+          <p className="font-medium">Early Bird Offer: Limited-time special pricing for first 100 customers!</p>
         </div>
       </div>
 
