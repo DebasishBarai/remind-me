@@ -19,6 +19,19 @@ export default function PrivacyPage() {
           We implement appropriate security measures to protect your personal information against unauthorized access or disclosure.
         </p>
 
+        <h2>4. Subscription and Cancellation Policy</h2>
+        <p>
+          You may cancel your subscription at any time through your account settings.
+        </p>
+        <ul>
+          <li>Cancellations take effect at the end of your current billing cycle.</li>
+          <li>No partial refunds are offered for the remainder of the billing period.</li>
+          <li>If you face any issues canceling, contact us at <a href="mailto:support@remindme.me">support@remindme.me</a>.</li>
+        </ul>
+        <p>
+          We reserve the right to cancel or suspend your account in cases of misuse or violation of our terms of service.
+        </p>
+
         {/* Add more sections as needed */}
       </div>
     </div>
