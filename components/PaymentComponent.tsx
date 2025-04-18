@@ -7,15 +7,41 @@ import { toast } from 'sonner';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Loader2 } from 'lucide-react';
 import { paypalOptions, PLAN_PRICES } from "@/lib/paypal-config";
+import { useCurrency } from '@/lib/currency-context';
 
 export function PaymentComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const plan = searchParams.get('plan') as 'basic' | 'premium' | null;
+  const billing = searchParams.get('billing') as 'monthly' | 'yearly' | null;
+  const { currency, convertPrice } = useCurrency();
 
-  const plan = searchParams.get('plan') as 'basic' | 'premium';
-  const amount = PLAN_PRICES[plan];
+  if (!plan || !billing) {
+    return (
+      <div className="container max-w-2xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Invalid Plan Selection</CardTitle>
+            <CardDescription>Please select a valid plan and billing cycle.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  // Calculate the amount based on plan and billing cycle
+  const basicMonthly = 99;
+  const premiumMonthly = 199;
+  const basicYearly = Math.floor(basicMonthly * 12 * 0.67 / 100) * 100 + 99;
+  const premiumYearly = Math.floor(premiumMonthly * 12 * 0.67 / 100) * 100 + 99;
+
+  const amount = plan === 'basic' 
+    ? (billing === 'monthly' ? basicMonthly : basicYearly)
+    : (billing === 'monthly' ? premiumMonthly : premiumYearly);
+
+  const convertedAmount = convertPrice(amount);
 
   useEffect(() => {
     if (!plan || !['basic', 'premium'].includes(plan)) {
@@ -43,77 +69,38 @@ export function PaymentComponent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center mb-6">
-            <div className="text-3xl font-bold">${amount}</div>
+            <div className="text-3xl font-bold">{convertedAmount.toFixed(2)} {currency}</div>
             <div className="text-sm text-muted-foreground">One-time payment</div>
           </div>
 
           <div className="w-full p-4 border rounded-lg">
-            <PayPalScriptProvider options={paypalOptions}>
+            <PayPalScriptProvider options={{ ...paypalOptions, currency }}>
               <PayPalButtons
                 style={{
                   layout: "vertical",
                   shape: "rect",
                   label: "pay",
                 }}
-                createOrder={async () => {
-                  try {
-                    console.log('🔵 Starting createOrder flow...');
-                    const response = await fetch("/api/payment", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    intent: "CAPTURE",
+                    purchase_units: [
+                      {
+                        amount: {
+                          currency_code: currency,
+                          value: convertedAmount.toFixed(2),
+                        },
+                        description: `RemindMe ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan (${billing})`,
                       },
-                      body: JSON.stringify({ plan }),
-                    });
-
-                    const orderData = await response.json();
-                    console.log('✅ Order created:', orderData);
-
-                    if (orderData.id) {
-                      return orderData.id;
-                    } else {
-                      const errorDetail = orderData?.details?.[0];
-                      const errorMessage = errorDetail
-                        ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
-                        : JSON.stringify(orderData);
-
-                      throw new Error(errorMessage);
-                    }
-                  } catch (error) {
-                    console.error('🔴 Create order error:', error);
-                    setMessage(`Could not initiate PayPal Checkout...${error}`);
-                    toast.error('Failed to initialize payment');
-                    throw error;
-                  }
+                    ],
+                  });
                 }}
-                onApprove={async (data, actions) => {
-                  try {
-                    console.log('🔵 Payment approved, starting capture...', data);
-                    const response = await fetch("/api/payment", {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        orderID: data.orderID,
-                        plan,
-                      }),
-                    });
-
-                    console.log('🔵 Capture response received');
-                    const orderData = await response.json();
-                    console.log('✅ Capture response data:', orderData);
-
-                    if (!response.ok) {
-                      throw new Error(orderData.error || 'Payment failed');
-                    }
-
+                onApprove={(data, actions) => {
+                  return actions.order!.capture().then((details) => {
+                    console.log('Payment completed:', details);
                     toast.success('Payment successful! Your plan has been upgraded.');
                     router.push('/dashboard');
-                  } catch (error) {
-                    console.error('🔴 Payment capture error:', error);
-                    toast.error('Payment failed. Please try again.');
-                  }
+                  });
                 }}
                 onError={(err) => {
                   console.error('🔴 PayPal error:', err);
