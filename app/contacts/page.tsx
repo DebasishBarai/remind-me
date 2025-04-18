@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Plus, Trash2, Search, Edit, UserPlus, ChevronDown } from 'lucide-react';
+import { Loader2, Plus, Trash2, Search, Edit, UserPlus, ChevronDown, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   Table,
@@ -29,13 +29,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { countryCodes, type CountryCode } from '@/lib/country-codes';
 
 interface Contact {
@@ -63,6 +56,10 @@ export default function ContactsPage() {
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const [isCountryCodeOpen, setIsCountryCodeOpen] = useState(false);
+  const [countryCodeSearch, setCountryCodeSearch] = useState('');
+  const countryCodeDropdownRef = useRef<HTMLDivElement>(null);
+  const countryCodeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -225,6 +222,13 @@ export default function ContactsPage() {
     );
   });
 
+  // Filter country codes based on search
+  const filteredCountryCodes = countryCodes.filter(country => 
+    country.name.toLowerCase().includes(countryCodeSearch.toLowerCase()) ||
+    country.code.toLowerCase().includes(countryCodeSearch.toLowerCase()) ||
+    country.dial_code.includes(countryCodeSearch)
+  );
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -378,29 +382,89 @@ export default function ContactsPage() {
             <div className="space-y-2">
               <Label htmlFor="contactPhone">WhatsApp Number</Label>
               <div className="flex gap-2">
-                <Select
-                  value={editingContact ? editingContactForm.countryCode : newContact.countryCode}
-                  onValueChange={(value) => {
-                    if (editingContact) {
-                      setEditingContactForm({ ...editingContactForm, countryCode: value });
-                    } else {
-                      setNewContact({ ...newContact, countryCode: value });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue placeholder="Code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countryCodes.map((country) => (
-                      <SelectItem key={country.code} value={country.dial_code}>
-                        <span className="flex items-center">
-                          {country.dial_code} ({country.code})
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative w-[180px]" ref={countryCodeDropdownRef}>
+                  <div
+                    className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-text"
+                    onClick={() => {
+                      if (countryCodeInputRef.current) {
+                        countryCodeInputRef.current.focus();
+                      }
+                      setIsCountryCodeOpen(true);
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                    {!isCountryCodeOpen && !countryCodeSearch ? (
+                      <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {editingContact ? editingContactForm.countryCode : newContact.countryCode}
+                      </div>
+                    ) : (
+                      <Input
+                        ref={countryCodeInputRef}
+                        placeholder="Search country..."
+                        className="border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        value={countryCodeSearch}
+                        onChange={(e) => {
+                          setCountryCodeSearch(e.target.value);
+                          if (e.target.value) {
+                            setIsCountryCodeOpen(true);
+                          }
+                        }}
+                        onFocus={() => {
+                          setIsCountryCodeOpen(true);
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            setIsCountryCodeOpen(false);
+                            setCountryCodeSearch('');
+                          }, 200);
+                        }}
+                      />
+                    )}
+                    <ChevronDown
+                      className={`ml-auto h-4 w-4 opacity-50 flex-shrink-0 transition-transform duration-200 ${isCountryCodeOpen ? 'transform rotate-180' : ''}`}
+                    />
+                  </div>
+
+                  {isCountryCodeOpen && (
+                    <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                      <div className="p-1">
+                        {filteredCountryCodes.length === 0 ? (
+                          <div className="py-6 text-center text-sm">
+                            No countries found
+                          </div>
+                        ) : (
+                          filteredCountryCodes.map((country) => (
+                            <div
+                              key={country.code}
+                              className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${(editingContact ? editingContactForm.countryCode : newContact.countryCode) === country.dial_code ? 'bg-accent text-accent-foreground' : ''}`}
+                              onClick={() => {
+                                if (editingContact) {
+                                  setEditingContactForm({ ...editingContactForm, countryCode: country.dial_code });
+                                } else {
+                                  setNewContact({ ...newContact, countryCode: country.dial_code });
+                                }
+                                setCountryCodeSearch('');
+                                setIsCountryCodeOpen(false);
+                                if (countryCodeInputRef.current) {
+                                  countryCodeInputRef.current.blur();
+                                }
+                              }}
+                            >
+                              <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                                {(editingContact ? editingContactForm.countryCode : newContact.countryCode) === country.dial_code && (
+                                  <Check className="h-4 w-4" />
+                                )}
+                              </span>
+                              <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                                {country.dial_code} ({country.code})
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <Input
                   id="contactPhone"
                   value={editingContact ? editingContactForm.phoneNumber : newContact.phoneNumber}
